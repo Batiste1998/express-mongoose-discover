@@ -1,10 +1,12 @@
 const express = require('express')
 const mongoose = require('mongoose')
+const wilderController = require('./controllers/wilder')
+const { wilderValidation } = require('./validation')
+require('dotenv').config()
 const app = express()
-const WilderModel = require('./models/Wilder')
 
 mongoose
-  .connect('mongodb://localhost:27017/wildcode', {
+  .connect(process.env.MONGO_URI, {
     autoIndex: true,
   })
   .then(() => {
@@ -14,29 +16,15 @@ mongoose
     console.log('Failed to connect to MongoDB', err)
   })
 
-app.get('/', (req, res) => {
-  console.log('Create a new wilder')
-  WilderModel.init().then(() => {
-    const wilder = new WilderModel({
-      name: 'Pierre',
-      city: 'Paris',
-      skills: [
-        { title: 'HTML', votes: 10 },
-        { title: 'CSS', votes: 10 },
-        { title: 'JS', votes: 10 },
-      ],
-    })
-    wilder
-      .save()
-      .then((result) => {
-        console.log('Wilder created', result)
-      })
-      .catch((error) => {
-        console.error('Failed to create wilder', error)
-      })
-  })
+app.use(express.urlencoded({ extended: true }))
+app.use(express.json())
+
+app.post('/api/wilder/create', wilderValidation.create, wilderController.create)
+
+app.use((req, res) => {
+  res.status(404).send('Sorry can\'t find that!')
 })
 
-app.listen(5000, () => {
+app.listen(process.env.PORT, () => {
   console.log('Server is running on http://localhost:5000')
 })
