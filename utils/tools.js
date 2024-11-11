@@ -8,6 +8,12 @@ const listErrors = (error) => {
     errors = { ...errors, [key]: `${key} is already taken` }
   })
 
+  if (error.name === 'CastError' && error.kind === 'ObjectId') {
+    errors = { 
+      [error.path]: `Invalid ${error.path} format`
+    }
+  }
+
   return errors
 }
 
